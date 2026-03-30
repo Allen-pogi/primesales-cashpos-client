@@ -35,6 +35,8 @@ const ExpensesPage = () => {
   });
   const [editAmount, setEditAmount] = useState("");
 
+  const API = process.env.REACT_APP_API_URL;
+
   const formatCurrencyWhileTyping = (value) => {
     if (!value) return "";
     const cleanValue = value.replace(/[^0-9.]/g, "");
@@ -68,9 +70,7 @@ const ExpensesPage = () => {
       filterDate,
     });
 
-    const res = await fetch(
-      `http://localhost:5000/api/transactions/all?${params.toString()}`
-    );
+    const res = await fetch(`${API}/api/transactions/all?${params.toString()}`);
     const data = await res.json();
 
     setExpenses(data.transactions || []);
@@ -88,7 +88,7 @@ const ExpensesPage = () => {
         </mark>
       ) : (
         part
-      )
+      ),
     );
   };
 
@@ -99,12 +99,9 @@ const ExpensesPage = () => {
 
   const handleTogglePassbook = async (id) => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/transactions/${id}/toggle-passbook`,
-        {
-          method: "PATCH",
-        }
-      );
+      const res = await fetch(`${API}/api/transactions/${id}/toggle-passbook`, {
+        method: "PATCH",
+      });
       if (!res.ok) throw new Error("Failed to update status");
       fetchExpenses();
     } catch (err) {
@@ -118,7 +115,7 @@ const ExpensesPage = () => {
       return;
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      const res = await fetch(`${API}/api/transactions/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -150,7 +147,7 @@ const ExpensesPage = () => {
   const handleUpdate = async (id) => {
     try {
       const payload = { ...editForm, amount: parseFloat(editForm.amount) };
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      const res = await fetch(`${API}/api/transactions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -181,7 +178,7 @@ const ExpensesPage = () => {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/transactions/create", {
+      const res = await fetch(`${API}/api/transactions/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -345,7 +342,7 @@ const ExpensesPage = () => {
                   value={
                     form.bank
                       ? formattedOptions.find(
-                          (opt) => opt.rawLabel === form.bank
+                          (opt) => opt.rawLabel === form.bank,
                         )
                       : null
                   }
@@ -521,7 +518,7 @@ const ExpensesPage = () => {
                               <Select
                                 options={visibleBanks}
                                 value={visibleBanks.find(
-                                  (opt) => opt.rawLabel === editForm.bank
+                                  (opt) => opt.rawLabel === editForm.bank,
                                 )}
                                 onChange={(selected) =>
                                   setEditForm({
@@ -540,11 +537,11 @@ const ExpensesPage = () => {
                                 onChange={(ev) => {
                                   const valNoCommas = ev.target.value.replace(
                                     /,/g,
-                                    ""
+                                    "",
                                   );
                                   if (/^\d*\.?\d*$/.test(valNoCommas)) {
                                     setEditAmount(
-                                      formatCurrencyWhileTyping(valNoCommas)
+                                      formatCurrencyWhileTyping(valNoCommas),
                                     );
                                     setEditForm({
                                       ...editForm,

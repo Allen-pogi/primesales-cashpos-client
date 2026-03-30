@@ -14,6 +14,8 @@ const DepositsPage = () => {
     type: "deposit",
   });
 
+  const API = process.env.REACT_APP_API_URL;
+
   const { user } = useAuth(); // 👈 get logged-in user (role, token, etc.)
 
   const [selectedBank, setSelectedBank] = useState(null);
@@ -71,7 +73,7 @@ const DepositsPage = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/transactions/all?${params.toString()}`
+        `${API}/api/transactions/all?${params.toString()}`,
       );
       if (!res.ok) throw new Error("Failed to fetch deposits");
       const data = await res.json();
@@ -95,7 +97,7 @@ const DepositsPage = () => {
         </mark>
       ) : (
         part
-      )
+      ),
     );
   };
 
@@ -106,10 +108,9 @@ const DepositsPage = () => {
 
   const handleTogglePassbook = async (id) => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/transactions/${id}/toggle-passbook`,
-        { method: "PATCH" }
-      );
+      const res = await fetch(`${API}/api/transactions/${id}/toggle-passbook`, {
+        method: "PATCH",
+      });
       if (!res.ok) throw new Error("Failed to update status");
       fetchData();
     } catch (err) {
@@ -124,7 +125,7 @@ const DepositsPage = () => {
 
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      const res = await fetch(`${API}/api/transactions/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -163,7 +164,7 @@ const DepositsPage = () => {
   const handleUpdate = async (id) => {
     try {
       const payload = { ...editForm, amount: parseFloat(editForm.amount) };
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      const res = await fetch(`${API}/api/transactions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -196,7 +197,7 @@ const DepositsPage = () => {
 
     try {
       setLoading(true); // show modal
-      const res = await fetch("http://localhost:5000/api/transactions/create", {
+      const res = await fetch(`${API}/api/transactions/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -357,7 +358,7 @@ const DepositsPage = () => {
                   value={
                     form.bank
                       ? formattedBankOptions.find(
-                          (opt) => opt.rawLabel === form.bank
+                          (opt) => opt.rawLabel === form.bank,
                         )
                       : null
                   }
@@ -537,7 +538,7 @@ const DepositsPage = () => {
                               <Select
                                 options={visibleBanks}
                                 value={visibleBanks.find(
-                                  (opt) => opt.rawLabel === editForm.bank
+                                  (opt) => opt.rawLabel === editForm.bank,
                                 )}
                                 onChange={(selected) =>
                                   setEditForm({
@@ -557,11 +558,11 @@ const DepositsPage = () => {
                                 onChange={(e) => {
                                   const valNoCommas = e.target.value.replace(
                                     /,/g,
-                                    ""
+                                    "",
                                   );
                                   if (/^\d*\.?\d*$/.test(valNoCommas)) {
                                     setEditAmount(
-                                      formatCurrencyWhileTyping(valNoCommas)
+                                      formatCurrencyWhileTyping(valNoCommas),
                                     );
                                     setEditForm({
                                       ...editForm,

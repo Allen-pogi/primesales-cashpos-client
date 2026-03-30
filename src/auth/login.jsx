@@ -9,6 +9,8 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth(); // 👈 get login method
 
+  const API = process.env.REACT_APP_API_URL;
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -16,12 +18,9 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+    console.log("API:", process.env.REACT_APP_API_URL);
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        form
-      );
+      const response = await axios.post(`${API}/api/auth/login`, form);
 
       const { token, role } = response.data;
 

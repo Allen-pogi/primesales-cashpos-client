@@ -34,7 +34,7 @@ const OCSIDepositsPage = () => {
     description: "",
   });
   const [editAmount, setEditAmount] = useState("");
-
+  const API = process.env.REACT_APP_API_URL;
   const formatCurrencyWhileTyping = (value) => {
     if (!value) return "";
     const cleanValue = value.replace(/[^0-9.]/g, "");
@@ -70,7 +70,7 @@ const OCSIDepositsPage = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/OCSI/transactions/all?${params.toString()}`
+        `http://localhost:5000/api/OCSI/transactions/all?${params.toString()}`,
       );
       if (!res.ok) throw new Error("Failed to fetch deposits");
       const data = await res.json();
@@ -94,7 +94,7 @@ const OCSIDepositsPage = () => {
         </mark>
       ) : (
         part
-      )
+      ),
     );
   };
 
@@ -106,8 +106,8 @@ const OCSIDepositsPage = () => {
   const handleTogglePassbook = async (id) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/OCSI/transactions/${id}/toggle-passbook`,
-        { method: "PATCH" }
+        `${API}/api/OCSI/transactions/${id}/toggle-passbook`,
+        { method: "PATCH" },
       );
       if (!res.ok) throw new Error("Failed to update status");
       fetchData();
@@ -122,12 +122,9 @@ const OCSIDepositsPage = () => {
       return;
     try {
       setLoading(true); // show modal
-      const res = await fetch(
-        `http://localhost:5000/api/OCSI/transactions/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const res = await fetch(`${API}/api/OCSI/transactions/${id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
         const error = await res.json();
         console.error("Delete failed:", error);
@@ -166,14 +163,11 @@ const OCSIDepositsPage = () => {
         role: user?.role || "assistant",
       };
 
-      const res = await fetch(
-        `http://localhost:5000/api/OCSI/transactions/${id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API}/api/OCSI/transactions/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       if (!res.ok) {
         const error = await res.json();
@@ -207,14 +201,11 @@ const OCSIDepositsPage = () => {
 
     try {
       setLoading(true); // show modal
-      const res = await fetch(
-        "http://localhost:5000/api/OCSI/transactions/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API}/api/OCSI/transactions/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       if (!res.ok) {
         const error = await res.json();
         console.error("Failed to save:", error);
@@ -366,7 +357,7 @@ const OCSIDepositsPage = () => {
                   value={
                     form.bank
                       ? formattedBankOptions.find(
-                          (opt) => opt.rawLabel === form.bank
+                          (opt) => opt.rawLabel === form.bank,
                         )
                       : null
                   }
@@ -546,7 +537,7 @@ const OCSIDepositsPage = () => {
                               <Select
                                 options={visibleBanks}
                                 value={visibleBanks.find(
-                                  (opt) => opt.rawLabel === editForm.bank
+                                  (opt) => opt.rawLabel === editForm.bank,
                                 )}
                                 onChange={(selected) =>
                                   setEditForm({
@@ -566,11 +557,11 @@ const OCSIDepositsPage = () => {
                                 onChange={(e) => {
                                   const valNoCommas = e.target.value.replace(
                                     /,/g,
-                                    ""
+                                    "",
                                   );
                                   if (/^\d*\.?\d*$/.test(valNoCommas)) {
                                     setEditAmount(
-                                      formatCurrencyWhileTyping(valNoCommas)
+                                      formatCurrencyWhileTyping(valNoCommas),
                                     );
                                     setEditForm({
                                       ...editForm,

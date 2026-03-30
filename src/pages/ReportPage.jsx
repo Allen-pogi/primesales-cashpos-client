@@ -26,14 +26,14 @@ const CashPositionReportPage = () => {
   const [deposits, setDeposits] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [beginningBalance, setBeginningBalance] = useState(
-    BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {})
+    BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
   );
 
   useEffect(() => {
     if (reportDate) {
       // Reset beginning balance when date changes
       setBeginningBalance(
-        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {})
+        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
       );
       fetchData();
     }
@@ -44,16 +44,16 @@ const CashPositionReportPage = () => {
   const mm = String(localDate.getMonth() + 1).padStart(2, "0");
   const dd = String(localDate.getDate()).padStart(2, "0");
   const formattedLocalDate = `${yyyy}-${mm}-${dd}`;
-
+  const API = process.env.REACT_APP_API_URL;
   const fetchData = async () => {
     const formattedDate = new Date(reportDate).toLocaleDateString();
     console.log("📅 Fetching data for report date:", formattedDate);
 
     const [depositRes, expenseRes, balanceRes] = await Promise.all([
-      fetch("http://localhost:5000/api/transactions/report?type=deposit"),
-      fetch("http://localhost:5000/api/transactions/report?type=expense"),
+      fetch(`${API}/api/transactions/report?type=deposit`),
+      fetch(`${API}/api/transactions/report?type=expense`),
       fetch(
-        `http://localhost:5000/api/transactions/beginning-balance?date=${formattedLocalDate}&role=${role}`
+        `${API}/api/transactions/beginning-balance?date=${formattedLocalDate}&role=${role}`,
       ),
     ]);
 
@@ -66,13 +66,16 @@ const CashPositionReportPage = () => {
     ]);
 
     console.log("📥 Raw beginningData from backend:", beginningData);
-    console.log("🗃 All bankBalances from backend:", beginningData.bankBalances);
+    console.log(
+      "🗃 All bankBalances from backend:",
+      beginningData.bankBalances,
+    );
 
     const filteredDeposits = allDeposits.filter(
-      (t) => new Date(t.date).toLocaleDateString() === formattedDate
+      (t) => new Date(t.date).toLocaleDateString() === formattedDate,
     );
     const filteredExpenses = allExpenses.filter(
-      (t) => new Date(t.date).toLocaleDateString() === formattedDate
+      (t) => new Date(t.date).toLocaleDateString() === formattedDate,
     );
 
     setDeposits(filteredDeposits);
@@ -86,7 +89,7 @@ const CashPositionReportPage = () => {
           const match = BANK_KEYS.find((bk) => trimmedBank.includes(bk.label));
           console.log(
             `🔎 Matching [${trimmedBank}] ➜`,
-            match?.label || "❌ No match"
+            match?.label || "❌ No match",
           );
 
           if (match) {
@@ -94,12 +97,12 @@ const CashPositionReportPage = () => {
           }
           return acc;
         },
-        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {})
+        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
       );
 
       console.log(
         "✅ Processed beginningBalance per bank:",
-        balancesFromBackend
+        balancesFromBackend,
       );
       setBeginningBalance(balancesFromBackend);
     } else {
@@ -145,10 +148,10 @@ const CashPositionReportPage = () => {
   const expenseTotals = calculateBankTotals(expenses);
 
   const depositRows = BANK_KEYS.map((b) =>
-    deposits.filter((t) => t.bank.includes(b.code))
+    deposits.filter((t) => t.bank.includes(b.code)),
   );
   const expenseRows = BANK_KEYS.map((b) =>
-    expenses.filter((t) => t.bank.includes(b.code))
+    expenses.filter((t) => t.bank.includes(b.code)),
   );
 
   const maxDepositRows = Math.max(...depositRows.map((r) => r.length));
@@ -181,7 +184,7 @@ const CashPositionReportPage = () => {
       Math.round(
         (Object.values(endingBalances).reduce((acc, val) => acc + val, 0) +
           Number.EPSILON) *
-          100
+          100,
       ) / 100;
 
     const payload = {
@@ -203,7 +206,7 @@ const CashPositionReportPage = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const result = await res.json();
@@ -634,14 +637,14 @@ const CashPositionReportPage = () => {
                     className="border border-gray-700 px-2 py-2 text-green-900 text-center"
                   >
                     {formatCurrency(
-                      depositTotals[b.label] + beginningBalance[b.label]
+                      depositTotals[b.label] + beginningBalance[b.label],
                     )}
                   </td>
                 ))}
                 <td className="border border-gray-700 px-2 py-2 text-green-900 text-center font-bold">
                   {formatCurrency(
                     sumObjectValues(depositTotals) +
-                      sumObjectValues(beginningBalance)
+                      sumObjectValues(beginningBalance),
                   )}
                 </td>
               </tr>
@@ -747,7 +750,7 @@ const CashPositionReportPage = () => {
                     {formatCurrency(
                       depositTotals[b.label] +
                         beginningBalance[b.label] -
-                        expenseTotals[b.label]
+                        expenseTotals[b.label],
                     )}
                   </td>
                 ))}
@@ -755,7 +758,7 @@ const CashPositionReportPage = () => {
                   {formatCurrency(
                     sumObjectValues(depositTotals) +
                       sumObjectValues(beginningBalance) -
-                      sumObjectValues(expenseTotals)
+                      sumObjectValues(expenseTotals),
                   )}
                 </td>
               </tr>

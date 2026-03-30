@@ -17,14 +17,16 @@ const OCSIAssistantCashPositionReportPage = () => {
   const [deposits, setDeposits] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [beginningBalance, setBeginningBalance] = useState(
-    BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {})
+    BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
   );
+
+  const API = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     if (reportDate) {
       // Reset beginning balance when date changes
       setBeginningBalance(
-        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {})
+        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
       );
       fetchData();
     }
@@ -41,10 +43,10 @@ const OCSIAssistantCashPositionReportPage = () => {
     console.log("📅 Fetching data for report date:", formattedDate);
 
     const [depositRes, expenseRes, balanceRes] = await Promise.all([
-      fetch("http://localhost:5000/api/OCSI/transactions/report?type=deposit"),
-      fetch("http://localhost:5000/api/OCSI/transactions/report?type=expense"),
+      fetch(`${API}/api/OCSI/transactions/report?type=deposit`),
+      fetch(`${API}/api/OCSI/transactions/report?type=expense`),
       fetch(
-        `http://localhost:5000/api/OCSI/transactions/beginning-balance?date=${formattedLocalDate}&role=${role}`
+        `${API}/api/OCSI/transactions/beginning-balance?date=${formattedLocalDate}&role=${role}`,
       ),
     ]);
 
@@ -57,13 +59,16 @@ const OCSIAssistantCashPositionReportPage = () => {
     ]);
 
     console.log("📥 Raw beginningData from backend:", beginningData);
-    console.log("🗃 All bankBalances from backend:", beginningData.bankBalances);
+    console.log(
+      "🗃 All bankBalances from backend:",
+      beginningData.bankBalances,
+    );
 
     const filteredDeposits = allDeposits.filter(
-      (t) => new Date(t.date).toLocaleDateString() === formattedDate
+      (t) => new Date(t.date).toLocaleDateString() === formattedDate,
     );
     const filteredExpenses = allExpenses.filter(
-      (t) => new Date(t.date).toLocaleDateString() === formattedDate
+      (t) => new Date(t.date).toLocaleDateString() === formattedDate,
     );
 
     setDeposits(filteredDeposits);
@@ -77,7 +82,7 @@ const OCSIAssistantCashPositionReportPage = () => {
           const match = BANK_KEYS.find((bk) => trimmedBank.includes(bk.label));
           console.log(
             `🔎 Matching [${trimmedBank}] ➜`,
-            match?.label || "❌ No match"
+            match?.label || "❌ No match",
           );
 
           if (match) {
@@ -85,12 +90,12 @@ const OCSIAssistantCashPositionReportPage = () => {
           }
           return acc;
         },
-        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {})
+        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
       );
 
       console.log(
         "✅ Processed beginningBalance per bank:",
-        balancesFromBackend
+        balancesFromBackend,
       );
       setBeginningBalance(balancesFromBackend);
     } else {
@@ -144,10 +149,10 @@ const OCSIAssistantCashPositionReportPage = () => {
   const expenseTotals = calculateBankTotals(expenses);
 
   const depositRows = BANK_KEYS.map((b) =>
-    deposits.filter((t) => t.bank.includes(b.code))
+    deposits.filter((t) => t.bank.includes(b.code)),
   );
   const expenseRows = BANK_KEYS.map((b) =>
-    expenses.filter((t) => t.bank.includes(b.code))
+    expenses.filter((t) => t.bank.includes(b.code)),
   );
 
   const maxDepositRows = Math.max(...depositRows.map((r) => r.length));
@@ -180,7 +185,7 @@ const OCSIAssistantCashPositionReportPage = () => {
       Math.round(
         (Object.values(endingBalances).reduce((acc, val) => acc + val, 0) +
           Number.EPSILON) *
-          100
+          100,
       ) / 100;
 
     const payload = {
@@ -202,7 +207,7 @@ const OCSIAssistantCashPositionReportPage = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const result = await res.json();
@@ -584,7 +589,7 @@ const OCSIAssistantCashPositionReportPage = () => {
               {/* Deposit Entries (1 per row with description) */}
               {sortByBankAndTime(deposits).map((t, idx) => {
                 const matchesBank = BANK_KEYS.some((b) =>
-                  t.bank.includes(b.code)
+                  t.bank.includes(b.code),
                 );
 
                 // If no bank matches, skip rendering row
@@ -648,14 +653,14 @@ const OCSIAssistantCashPositionReportPage = () => {
                     className="border px-2 py-2 text-green-900 text-center border-gray-700"
                   >
                     {formatCurrency(
-                      depositTotals[b.label] + beginningBalance[b.label]
+                      depositTotals[b.label] + beginningBalance[b.label],
                     )}
                   </td>
                 ))}
                 <td className="border px-2 py-2 text-green-900 text-center font-bold border-gray-700">
                   {formatCurrency(
                     sumObjectValues(depositTotals) +
-                      sumObjectValues(beginningBalance)
+                      sumObjectValues(beginningBalance),
                   )}
                 </td>
               </tr>
@@ -700,7 +705,7 @@ const OCSIAssistantCashPositionReportPage = () => {
               {/* Expense Entries (1 per row with description) */}
               {sortByBankAndTime(expenses).map((t, idx) => {
                 const matchesBank = BANK_KEYS.some((b) =>
-                  t.bank.includes(b.code)
+                  t.bank.includes(b.code),
                 );
 
                 // If no bank matches, skip rendering row
@@ -767,7 +772,7 @@ const OCSIAssistantCashPositionReportPage = () => {
                     {formatCurrency(
                       depositTotals[b.label] +
                         beginningBalance[b.label] -
-                        expenseTotals[b.label]
+                        expenseTotals[b.label],
                     )}
                   </td>
                 ))}
@@ -775,7 +780,7 @@ const OCSIAssistantCashPositionReportPage = () => {
                   {formatCurrency(
                     sumObjectValues(depositTotals) +
                       sumObjectValues(beginningBalance) -
-                      sumObjectValues(expenseTotals)
+                      sumObjectValues(expenseTotals),
                   )}
                 </td>
               </tr>
