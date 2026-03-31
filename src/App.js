@@ -86,8 +86,8 @@ function App() {
             {/* Company A routes */}
             <Route path="/PSI" element={<PSI />}>
               <Route path="admin-report" element={<ReportPage />} />
-              <Route path="expenses" element={<ExpensesPage />} />
-              <Route path="deposits" element={<DepositsPage />} />
+              {/* <Route path="expenses" element={<ExpensesPage />} />
+              <Route path="deposits" element={<DepositsPage />} /> */}
               <Route
                 path="assistant-report"
                 element={<AssistantCashPositionReportPage />}
@@ -109,8 +109,8 @@ function App() {
                 path="assistant-report"
                 element={<OCSIAssistantCashPositionReportPage />}
               />
-              <Route path="expenses" element={<OCSIExpensesPage />} />
-              <Route path="deposits" element={<OCSIDepositsPage />} />
+              {/* <Route path="expenses" element={<OCSIExpensesPage />} />
+              <Route path="deposits" element={<OCSIDepositsPage />} /> */}
               <Route
                 path="assistant-report"
                 element={<AssistantCashPositionReportPage />}

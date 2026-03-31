@@ -163,6 +163,7 @@ const DepositsPage = () => {
 
   const handleUpdate = async (id) => {
     try {
+      setLoading(true);
       const payload = { ...editForm, amount: parseFloat(editForm.amount) };
       const res = await fetch(`${API}/api/transactions/${id}`, {
         method: "PUT",
@@ -180,6 +181,8 @@ const DepositsPage = () => {
     } catch (err) {
       console.error("Update error:", err);
       alert("Error updating transaction");
+    } finally {
+      setLoading(false); // hide modal
     }
   };
   // -------------------- END EDITING --------------------

@@ -18,14 +18,14 @@ const PSI = () => {
             </h2>
           </div>
           <div className="gap-4 flex text- items-center">
-            {role === "admin" && <Link to="admin-report">Admin </Link>}
+            {/* {role === "admin" && <Link to="admin-report">Admin </Link>} */}
 
             {/* Assistant + Admin can see */}
-            <Link to="assistant-report">Assistant </Link>
+            {/* <Link to="assistant-report">Assistant </Link>
             <Link to="expenses">Disbursement</Link>
             <Link to="deposits">Deposits</Link>
             {role === "admin" && <Link to="graph">Graph</Link>}
-            {role === "assistant" && <Link to="graph-assistant">Graph</Link>}
+            {role === "assistant" && <Link to="graph-assistant">Graph</Link>} */}
             <Link
               to="/welcome"
               className="flex items-center ml-4 bg-green-300 rounded-sm hover:bg-green-500 p-1 text-black font-semibold"
