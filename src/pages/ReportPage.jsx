@@ -21,6 +21,7 @@ const bankColors = [
   "#4892cf",
 ];
 const role = "admin";
+
 const CashPositionReportPage = () => {
   const [reportDate, setReportDate] = useState("");
   const [deposits, setDeposits] = useState([]);
@@ -28,6 +29,7 @@ const CashPositionReportPage = () => {
   const [beginningBalance, setBeginningBalance] = useState(
     BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
   );
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (reportDate) {
@@ -45,71 +47,63 @@ const CashPositionReportPage = () => {
   const dd = String(localDate.getDate()).padStart(2, "0");
   const formattedLocalDate = `${yyyy}-${mm}-${dd}`;
   const API = process.env.REACT_APP_API_URL;
+
   const fetchData = async () => {
-    const formattedDate = new Date(reportDate).toLocaleDateString();
-    console.log("📅 Fetching data for report date:", formattedDate);
+    setLoading(true); // start overlay
 
-    const [depositRes, expenseRes, balanceRes] = await Promise.all([
-      fetch(`${API}/api/transactions/report?type=deposit`),
-      fetch(`${API}/api/transactions/report?type=expense`),
-      fetch(
-        `${API}/api/transactions/beginning-balance?date=${formattedLocalDate}&role=${role}`,
-      ),
-    ]);
+    try {
+      const formattedDate = new Date(reportDate).toLocaleDateString();
 
-    console.log("💾 balanceRes.status:", balanceRes.status);
+      const [depositRes, expenseRes, balanceRes] = await Promise.all([
+        fetch(`${API}/api/transactions/report?type=deposit`),
+        fetch(`${API}/api/transactions/report?type=expense`),
+        fetch(
+          `${API}/api/transactions/beginning-balance?date=${formattedLocalDate}&role=${role}`,
+        ),
+      ]);
 
-    const [allDeposits, allExpenses, beginningData] = await Promise.all([
-      depositRes.json(),
-      expenseRes.json(),
-      balanceRes.json(),
-    ]);
+      const [allDeposits, allExpenses, beginningData] = await Promise.all([
+        depositRes.json(),
+        expenseRes.json(),
+        balanceRes.json(),
+      ]);
 
-    console.log("📥 Raw beginningData from backend:", beginningData);
-    console.log(
-      "🗃 All bankBalances from backend:",
-      beginningData.bankBalances,
-    );
-
-    const filteredDeposits = allDeposits.filter(
-      (t) => new Date(t.date).toLocaleDateString() === formattedDate,
-    );
-    const filteredExpenses = allExpenses.filter(
-      (t) => new Date(t.date).toLocaleDateString() === formattedDate,
-    );
-
-    setDeposits(filteredDeposits);
-    setExpenses(filteredExpenses);
-
-    // 👉 Match backend to BANK_KEYS by .includes
-    if (beginningData.bankBalances) {
-      const balancesFromBackend = beginningData.bankBalances.reduce(
-        (acc, b) => {
-          const trimmedBank = b.bank.trim();
-          const match = BANK_KEYS.find((bk) => trimmedBank.includes(bk.label));
-          console.log(
-            `🔎 Matching [${trimmedBank}] ➜`,
-            match?.label || "❌ No match",
-          );
-
-          if (match) {
-            acc[match.label] = b.beginningBalance ?? b.endingBalance ?? 0;
-          }
-          return acc;
-        },
-        BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
+      const filteredDeposits = allDeposits.filter(
+        (t) => new Date(t.date).toLocaleDateString() === formattedDate,
       );
 
-      console.log(
-        "✅ Processed beginningBalance per bank:",
-        balancesFromBackend,
+      const filteredExpenses = allExpenses.filter(
+        (t) => new Date(t.date).toLocaleDateString() === formattedDate,
       );
-      setBeginningBalance(balancesFromBackend);
-    } else {
-      console.warn("⚠️ No bankBalances array in response");
+
+      setDeposits(filteredDeposits);
+      setExpenses(filteredExpenses);
+
+      if (beginningData.bankBalances) {
+        const balancesFromBackend = beginningData.bankBalances.reduce(
+          (acc, b) => {
+            const trimmedBank = b.bank.trim();
+            const match = BANK_KEYS.find((bk) =>
+              trimmedBank.includes(bk.label),
+            );
+
+            if (match) {
+              acc[match.label] = b.beginningBalance ?? b.endingBalance ?? 0;
+            }
+
+            return acc;
+          },
+          BANK_KEYS.reduce((acc, b) => ({ ...acc, [b.label]: 0 }), {}),
+        );
+
+        setBeginningBalance(balancesFromBackend);
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false); // remove overlay when finished
     }
   };
-
   const formatCurrency = (val) =>
     `₱${parseFloat(val || 0).toLocaleString(undefined, {
       minimumFractionDigits: 2,
@@ -164,6 +158,7 @@ const CashPositionReportPage = () => {
       [bankLabel]: parsed,
     }));
   };
+
   const handleSaveEndingBalance = async () => {
     const endingBalances = {};
 
@@ -485,6 +480,33 @@ const CashPositionReportPage = () => {
       className="px-8 max-w-full min-h-screen"
       style={{ fontFamily: "Roboto, sans-serif" }}
     >
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-8 rounded-lg flex flex-col items-center shadow-lg">
+            <svg
+              className="animate-spin h-12 w-12 text-blue-600 mb-4"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              ></path>
+            </svg>
+            <p className="text-gray-700 font-medium">Generating report...</p>
+          </div>
+        </div>
+      )}
       <h1 className="text-xl font-bold mb-2 mt-4">Prime Sales Inc. - ADMIN</h1>
       <div className="flex mt-4">
         <div className="mb-">
